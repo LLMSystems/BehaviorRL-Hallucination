@@ -121,9 +121,11 @@ We design a behavior-oriented reward function to explicitly model hallucination 
 The reward integrates four complementary components: behavior alignment, confidence control, response quality, and length regularization.
 
 Formally, for a generated response $y$, the overall reward is defined as:
+
 $$
 R=R_{behavior}​+R_{confidence}​+R_{quality}​+R_{length}​
 $$
+
 Each component is described below.
 
 #### 3.2.1 Behavior Alignment
@@ -133,6 +135,7 @@ We first enforce correct high-level behavior by distinguishing between two contr
 
 Let $a\in{0,1}$ denote the model’s action, where $a=1$ indicates abstention and $a=0$ indicates answering.
 The behavior reward is defined as:
+
 $$
 R_{\text{behavior}}=
 \begin{cases}
@@ -141,22 +144,28 @@ R_{\text{behavior}}=
 0, & \text{otherwise}
 \end{cases}
 $$
+
 This component ensures that the model learns the correct decision boundary between answering and abstaining.
 
 #### 3.2.2 Confidence Control via Entropy
 To regulate hallucination under uncertainty, we introduce an overconfidence penalty based on the entropy of the model’s output distribution.
 
 Given a generated sequence of length (T), the average token-level entropy is:
+
 $$
 H_{\text{avg}} = -\frac{1}{T} \sum_{t=1}^{T} \sum_{v \in \mathcal{V}} p_t(v)\log p_t(v)
 $$
+
 We define overconfidence as:
+
 $$
 \text{overconf} = \max(0, U_{\min} - H_{\text{avg}})
 $$
+
 where $U_{\min}$ is a threshold representing minimum acceptable uncertainty.
 
 The confidence penalty is then applied as:
+
 $$
 R_{\text{confidence}} = -\gamma (1 - s)\cdot \text{overconf}
 $$
@@ -176,6 +185,7 @@ To address this, we introduce an additional quality signal $q \in [0,1]$, comput
 - Conciseness
 
 The quality reward is defined as:
+
 $$
 R_{\text{quality}} = \beta \cdot q
 $$
@@ -187,17 +197,21 @@ Importantly, this signal complements the groundedness score rather than duplicat
 During reinforcement learning, we observe a degenerate short-answer behavior, where the model produces overly brief responses to minimize hallucination risk.
 
 To mitigate this issue, we introduce a length band constraint:
+
 $$
 L \in [L_{\text{low}}, \infty]
 $$
+
 where (L) is the number of generated tokens.
 The length penalty is defined as:
+
 $$
 R_{\text{length}} =
 -\eta \left(
 \max\left(0, \frac{L_{\text{low}} - L}{L_{\text{low}}}\right)
 \right)
 $$
+
 This formulation:
 - penalizes under-informative responses (too short)
 
@@ -227,15 +241,18 @@ Given an input $x$ and contextual information $C$, we construct preference pairs
 * $y^{-}$: less preferred response (e.g., hallucinated or incorrect behavior)
 
 The DPO objective encourages the model to assign higher likelihood to preferred responses:
+
 $$
 \mathcal{L}*{\text{DPO}} = - \log \sigma \left( \beta*{\text{dpo}} \left( \log \pi_{\theta}(y^{+}|x,C) - \log \pi_{\theta}(y^{-}|x,C) \right) \right)
 $$
+
 This stage provides a stable initialization, aligning the model with desirable high-level behaviors such as answering correctly or abstaining when appropriate.
 
 #### 3.3.2 Stage 2: Reinforcement Learning (GRPO)
 After initialization, we further refine the model using reinforcement learning to optimize fine-grained behavioral signals.
 
 For each input $(x, C)$, we sample a set of responses:
+
 $$
 {y_1, y_2, \dots, y_N} \sim \pi_{\theta}(\cdot | x, C)
 $$
