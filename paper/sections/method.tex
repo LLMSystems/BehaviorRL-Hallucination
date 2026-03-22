@@ -1,0 +1,171 @@
+\section{Method}
+
+\subsection{Problem Formulation}
+
+We consider hallucination in large language models as a decision-making problem under uncertainty, rather than purely a generation problem.
+
+Given an input query $x$ and contextual information $C = \{c_1, c_2, \dots, c_k\}$, a language model generates a response $y$. 
+The objective is to produce responses that are both grounded and useful, while avoiding unsupported or misleading outputs.
+
+\subsubsection{Hallucination as Decision-Making}
+
+We define hallucination as a failure to make appropriate decisions under uncertainty. 
+Specifically, the model must jointly determine: 
+(i) whether to answer or abstain, 
+(ii) how to construct the response, and 
+(iii) how confident the response should be.
+
+Under this formulation, hallucination occurs when the model produces responses that are either unsupported by available information or expressed with excessive confidence under uncertainty.
+
+\subsubsection{Controlled Contextual Scenarios}
+
+To systematically study model behavior, we consider two controlled scenarios:
+
+\begin{itemize}
+    \item \textbf{No reliable information:} The context does not contain sufficient evidence to answer the query. The desired behavior is to abstain.
+    \item \textbf{Partially correct information:} The context contains a mixture of relevant and irrelevant information, including at least one correct supporting evidence. The desired behavior is to generate a selective and grounded response.
+\end{itemize}
+
+These scenarios enable explicit modeling of the decision boundary between answering and abstaining.
+
+\subsubsection{Groundedness and Uncertainty}
+
+We introduce a groundedness score $s \in [0,1]$, measuring the degree to which a response is supported by the available context, following the groundedness metric proposed in RAG evaluation frameworks \cite{es2024ragas}.
+
+We quantify model uncertainty using the average token-level entropy, which serves as a proxy for predictive uncertainty and has been widely adopted in prior work~\cite{farquhar2024detecting}:
+
+\[
+H_{\text{avg}} = -\frac{1}{T} \sum_{t=1}^{T} \sum_{v \in \mathcal{V}} p_t(v)\log p_t(v)
+\]
+
+where $T$ is the response length and $p_t(v)$ denotes the probability of token $v$ at step $t$.
+
+We interpret low entropy as high confidence and high entropy as high uncertainty. 
+Hallucination often arises when the model exhibits low entropy despite low groundedness.
+
+\subsubsection{Objective}
+
+Our objective is to learn a policy that:
+(i) abstains when reliable information is unavailable, 
+(ii) produces grounded responses when sufficient evidence exists, 
+(iii) avoids overconfident behavior under uncertainty, and 
+(iv) maintains response quality and usefulness.
+
+This formulation naturally leads to a reinforcement learning framework that optimizes behavior under uncertainty rather than purely maximizing likelihood.
+
+
+\subsection{Reward Function}
+
+We design a behavior-oriented reward function that explicitly models hallucination as a decision-making problem under uncertainty. 
+The reward integrates four components: behavior alignment, confidence control, response quality, and length regularization.
+
+\[
+R = R_{\text{behavior}} + R_{\text{confidence}} + R_{\text{quality}} + R_{\text{length}}
+\]
+
+\subsubsection{Behavior Alignment}
+
+We distinguish two controlled scenarios: (i) no reliable information, where the model should abstain, and (ii) partially correct information, where the model should answer.
+
+Let $a \in \{0,1\}$ denote the model action, where $a=1$ indicates abstention and $a=0$ indicates answering.
+
+\[
+R_{\text{behavior}} =
+\begin{cases}
++R_{\text{abstain}}, & \text{if abstention is correct} \\
+-\alpha, & \text{if abstention is incorrect} \\
+0, & \text{otherwise}
+\end{cases}
+\]
+
+\subsubsection{Confidence Control via Entropy}
+
+We introduce an overconfidence penalty based on entropy:
+
+\[
+H_{\text{avg}} = -\frac{1}{T} \sum_{t=1}^{T} \sum_{v \in \mathcal{V}} p_t(v)\log p_t(v)
+\]
+
+\[
+\text{overconf} = \max(0, U_{\min} - H_{\text{avg}})
+\]
+
+\[
+R_{\text{confidence}} = -\gamma (1 - s)\cdot \text{overconf}
+\]
+
+This discourages overly confident predictions when groundedness is low, while preserving confident generation when responses are well-supported.
+
+\subsubsection{Response Quality Shaping}
+
+We introduce a quality score $q \in [0,1]$, computed from multiple dimensions including completeness, actionability, evidence use, and conciseness, following LLM-based evaluation approaches such as G-Eval~\cite{geval}.
+
+\[
+R_{\text{quality}} = \beta \cdot q
+\]
+
+This component promotes informative and well-structured responses beyond factual correctness.
+
+\subsubsection{Length Regularization}
+
+To prevent degenerate short responses, we impose a length constraint:
+
+\[
+L \in [L_{\text{low}}, \infty]
+\]
+
+\[
+R_{\text{length}} =
+-\eta \left(
+\max\left(0, \frac{L_{\text{low}} - L}{L_{\text{low}}}\right)
+\right)
+\]
+
+This penalizes under-informative outputs. In practice, we set $L_{\text{low}} = 50$.
+
+\subsubsection{Summary}
+
+The reward function jointly optimizes decision-making, uncertainty-aware behavior, response quality, and generation stability, enabling balanced behavior under uncertainty.
+
+
+\subsection{Training Framework}
+
+We adopt a two-stage LoRA training framework consisting of preference-based initialization followed by reinforcement learning refinement.
+
+\subsubsection{Stage 1: Preference Optimization (DPO)}
+
+We first perform Direct Preference Optimization (DPO)~\cite{dpo} to obtain a stable initialization.
+
+Given $(x, C)$, we construct preference pairs $(y^{+}, y^{-})$:
+
+\begin{itemize}
+    \item $y^{+}$: preferred response (grounded or correct)
+    \item $y^{-}$: less preferred response (hallucinated or incorrect)
+\end{itemize}
+
+\[
+\mathcal{L}_{\text{DPO}} = - \log \sigma \left( \beta_{\text{dpo}} \left( \log \pi_{\theta}(y^{+}|x,C) - \log \pi_{\theta}(y^{-}|x,C) \right) \right)
+\]
+
+\subsubsection{Stage 2: Reinforcement Learning (GRPO)}
+
+We refine the model using Group Relative Policy Optimization (GRPO)~\cite{GRPO}.
+
+For each $(x, C)$, we sample:
+
+\[
+\{y_1, y_2, \dots, y_N\} \sim \pi_{\theta}(\cdot | x, C)
+\]
+
+Each response is evaluated using the reward $R(y)$.
+
+\[
+A_i = R(y_i) - \frac{1}{N} \sum_{j=1}^{N} R(y_j)
+\]
+
+The policy is updated to increase the likelihood of higher-reward responses relative to the group.
+
+\subsubsection{Training Stability}
+
+We observe that reinforcement learning may lead to degenerate strategies such as overly short responses. 
+To mitigate this, we incorporate quality-based reward shaping and length regularization to maintain a balance between hallucination mitigation and response usefulness.

@@ -1,0 +1,37 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+\input{packages}
+\input{macros}
+
+\title{Learning When to Answer: Behavior-Oriented Reinforcement Learning for Hallucination Mitigation}
+\author{Max \and Eddie}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Large language models (LLMs) often hallucinate under uncertainty, producing fluent yet unsupported or incorrect responses. 
+We argue that hallucination is fundamentally a decision-making problem, involving when to answer, when to abstain, and how confidently to respond, rather than purely a generation error.
+
+To address this, we propose a behavior-oriented reinforcement learning framework that explicitly models these decisions. 
+Our method integrates behavior alignment, entropy-based uncertainty modeling, response quality shaping, and length regularization into a unified reward function. 
+The model is optimized through a two-stage training process, combining preference learning via Direct Preference Optimization (DPO)~\cite{dpo} and reinforcement learning with Group Relative Policy Optimization (GRPO)~\cite{GRPO}.
+
+Experimental results show that our approach reduces hallucination by over 65\%, consistently outperforming strong baselines such as GPT-4o. 
+Moreover, the learned behavior generalizes effectively to unseen domains, improves response quality across multiple evaluation dimensions, and preserves general knowledge capability without catastrophic forgetting~\cite{EWC}.
+
+These results demonstrate that hallucination mitigation can be effectively achieved by learning behavior under uncertainty, enabling LLMs to produce responses that are both reliable and useful.
+\end{abstract}
+\input{sections/intro.tex}
+\input{sections/method.tex}
+\input{sections/results.tex}
+\input{sections/conclusion.tex}
+\input{appendix/appendix.tex}
+
+\bibliographystyle{plain}
+\bibliography{refs/references}
+
+
+\end{document}

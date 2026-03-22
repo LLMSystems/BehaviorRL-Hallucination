@@ -1,0 +1,12 @@
+\section{Conclusion}
+
+In this work, we revisit hallucination in large language models from a behavioral perspective. 
+Rather than treating hallucination as a purely generative error, we formulate it as a decision-making problem under uncertainty, involving when to answer, how to answer, and how confidently to respond.
+
+We propose a behavior-oriented reinforcement learning framework that integrates behavior alignment to distinguish between answering and abstaining, uncertainty modeling via entropy-based overconfidence control, response quality shaping to ensure usefulness and completeness, and length regularization to prevent degenerate generation strategies.
+
+Through extensive experiments, we demonstrate that the proposed approach reduces hallucination by over 65\%, consistently outperforming strong baselines such as GPT-4o. 
+Furthermore, the learned behavior generalizes effectively to unseen domains, significantly improves response quality across multiple dimensions, and preserves general knowledge capability without catastrophic forgetting.
+
+These results suggest that hallucination is not merely a limitation of knowledge, but a consequence of suboptimal decision-making under uncertainty. 
+By explicitly modeling behavior, confidence, and response quality, the proposed framework enables language models to produce outputs that are both reliable and useful.

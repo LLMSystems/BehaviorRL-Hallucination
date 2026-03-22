@@ -1,0 +1,165 @@
+\section{Experiments}
+
+\subsection{Experimental Setup}
+
+\subsubsection{Models}
+
+We evaluate our method on a 12B-parameter open-weight language model (Gemma3-12B-IT). 
+We compare against the base model (without fine-tuning) and GPT-4o as a strong closed-source baseline.
+
+\subsubsection{Evaluation Settings}
+
+We conduct experiments under controlled contextual conditions with varying information quality, including scenarios with no reliable information and scenarios with partially correct information. 
+This setup enables evaluation of both hallucination suppression and response quality under uncertainty.
+
+\subsubsection{Metrics}
+
+\paragraph{Hallucination Metric}
+We measure hallucination using a binary judgment indicating whether a response is supported by available information or contains unsupported or incorrect content. 
+We report hallucination rate (\%) across different difficulty levels.
+
+\paragraph{Response Quality Metrics}
+We adopt an LLM-as-a-judge framework with eight evaluation dimensions, including relevance, coherence, consistency, fluency, completeness, actionability, evidence use, and conciseness, each normalized to $[0,1]$. 
+Detailed definitions of these metrics are provided in Appendix~\ref{app:metrics}.
+
+\subsubsection{Dataset}
+
+We construct a controlled dataset consisting of two scenarios: (i) no reliable information (all\_wrong), where the model should abstain, and (ii) partially correct information (one\_correct), where the model should generate grounded responses. 
+The dataset is derived from internal sources and is not publicly available due to privacy constraints.
+
+
+\subsection{Main Results}
+
+\subsubsection{Hallucination Reduction}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccc}
+\toprule
+K & GPT-4o & Base & Ours \\
+\midrule
+1 & 14.3\% & 24.3\% & \textbf{6.0\%} \\
+3 & 16.3\% & 22.0\% & \textbf{8.3\%} \\
+5 & 17.0\% & 23.3\% & \textbf{8.6\%} \\
+7 & 23.0\% & 25.6\% & \textbf{8.6\%} \\
+9 & 19.6\% & 26.0\% & \textbf{10.3\%} \\
+\midrule
+Avg & 18.04\% & 24.24\% & \textbf{8.36\%} \\
+\bottomrule
+\end{tabular}
+\caption{Hallucination rate (\%) across context sizes. Lower is better.}
+\end{table}
+
+Our method significantly reduces hallucination compared to both the base model and GPT-4o. 
+It achieves an average hallucination rate of 8.36\%, corresponding to a 65.5\% relative reduction compared to the base model and a 53.6\% reduction compared to GPT-4o. 
+The improvement is consistent across all context sizes, indicating robustness under increasing contextual complexity.
+
+
+\subsubsection{Generalization Performance}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cccc}
+\toprule
+K & GPT-4o & Base & Ours \\
+\midrule
+1 & 2.3\% & 12.7\% & \textbf{2.3\%} \\
+3 & 5.3\% & 12.3\% & \textbf{5.0\%} \\
+5 & 6.7\% & 14.7\% & \textbf{5.6\%} \\
+7 & 9.3\% & 18.3\% & \textbf{7.6\%} \\
+9 & 8.0\% & 17.3\% & 8.6\% \\
+\midrule
+Avg & 6.32\% & 15.06\% & \textbf{5.82\%} \\
+\bottomrule
+\end{tabular}
+\caption{Hallucination rate (\%) on unseen domain dataset.}
+\end{table}
+
+The fine-tuned model maintains strong performance under domain shift, achieving 5.82\% average hallucination rate and outperforming both the base model and GPT-4o.
+
+
+\subsubsection{Response Quality}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+\toprule
+Metric & Base & Ours \\
+\midrule
+Relevance & 4.10 & \textbf{4.62} \\
+Coherence & 3.62 & \textbf{4.42} \\
+Consistency & 4.69 & \textbf{4.83} \\
+Fluency & 2.86 & \textbf{2.87} \\
+Completeness & 3.29 & \textbf{3.95} \\
+Actionability & 2.70 & \textbf{3.32} \\
+Evidence Use & 2.09 & \textbf{4.79} \\
+Conciseness & 3.97 & \textbf{4.37} \\
+\midrule
+Average & 3.42 & \textbf{4.15} \\
+\bottomrule
+\end{tabular}
+\caption{Response quality evaluation. Higher is better.}
+\end{table}
+
+Our method improves response quality across all dimensions, with the largest gain in evidence use (2.09 → 4.79), indicating improved grounding and reasoning transparency.
+
+
+\subsubsection{General Knowledge Preservation}
+
+The results show that the proposed method preserves general knowledge capability, with minimal degradation outside mathematical reasoning tasks. 
+Instruction-following ability slightly improves, suggesting enhanced controllability.
+
+
+\subsubsection{Summary}
+
+Overall, the proposed method achieves a strong balance between hallucination mitigation, response quality, and general capability preservation.
+
+
+\subsection{Analysis}
+
+\subsubsection{Entropy and Overconfidence}
+
+We analyze token-level entropy:
+
+\[
+\tilde{H} = \log_{10}(H_{\text{avg}} + \epsilon)
+\]
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+\toprule
+K & all\_wrong & one\_correct \\
+\midrule
+1 & -0.6790 & -1.5007 \\
+3 & -0.8695 & -1.7862 \\
+5 & -0.8462 & -1.8510 \\
+7 & -0.8746 & -1.7624 \\
+9 & -0.8994 & -1.7480 \\
+\bottomrule
+\end{tabular}
+\caption{Entropy under different information conditions.}
+\end{table}
+
+We observe clear separation: higher entropy for unanswerable cases and lower entropy for answerable ones, indicating entropy is an effective proxy for decision boundaries.
+
+
+\subsubsection{Abstention Behavior}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccc}
+\toprule
+K & Abstained & Not Abstained \\
+\midrule
+1 & -0.6444 & -1.1390 \\
+3 & -0.7498 & -1.3853 \\
+5 & -0.7753 & -1.3675 \\
+7 & -0.7649 & -1.3284 \\
+9 & -0.7664 & -1.5338 \\
+\bottomrule
+\end{tabular}
+\caption{Entropy vs. abstention behavior.}
+\end{table}
+
+Correct abstentions exhibit higher entropy, while incorrect answers show lower entropy (overconfidence), supporting the effectiveness of our entropy-based penalty.

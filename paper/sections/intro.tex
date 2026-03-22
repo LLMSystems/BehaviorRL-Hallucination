@@ -1,0 +1,32 @@
+\section{Introduction}
+
+Large language models (LLMs) have demonstrated remarkable capabilities across a wide range of tasks. 
+However, they are prone to hallucination, generating fluent but unsupported or incorrect responses~\cite{ji2023survey,Ji_2023,lin2022truthfulqameasuringmodelsmimic}, particularly under conditions of uncertainty or incomplete information. 
+Such behavior poses significant challenges for real-world applications where reliability is critical.
+
+Existing approaches to mitigate hallucination primarily focus on improving knowledge access or post-hoc verification. 
+For example, retrieval-augmented generation (RAG)~\cite{rag} enhances factual grounding by incorporating external documents, while various detection methods attempt to identify hallucinated outputs after generation~\cite{lin2022truthfulqameasuringmodelsmimic}. 
+Despite their effectiveness, these approaches do not explicitly address a fundamental issue: LLMs often fail to make appropriate decisions under uncertainty, such as when to answer, when to abstain, and how confidently to respond.
+
+In this work, we argue that hallucination is not merely a generation error, but a consequence of suboptimal decision-making under uncertainty. 
+From this perspective, mitigating hallucination requires learning a policy that balances correctness, confidence, and usefulness, rather than solely improving token-level prediction.
+
+To this end, we propose a behavior-oriented reinforcement learning framework that explicitly models hallucination as a decision problem. 
+Our approach optimizes model behavior along three key dimensions:
+(i) whether to answer or abstain, based on the availability of reliable information; 
+(ii) how to construct responses, ensuring grounded and informative outputs; and 
+(iii) how confident to be, avoiding overconfident generation under uncertainty.
+
+We design a unified reward function that integrates multiple components: 
+behavior alignment, which encourages correct decision boundaries between answering and abstaining; 
+uncertainty modeling via entropy-based overconfidence penalties; 
+response quality shaping to promote completeness, actionability, and the use of supporting evidence; 
+and length regularization to prevent degenerate short responses or excessively verbose outputs.
+
+To optimize this objective, we adopt a two-stage training framework consisting of preference-based initialization using Direct Preference Optimization (DPO)~\cite{dpo}, followed by reinforcement learning with Group Relative Policy Optimization (GRPO)~\cite{GRPO}, enabling stable and fine-grained policy optimization.
+
+We conduct extensive experiments to evaluate the proposed method. 
+The results show that our approach reduces hallucination by over 65\%, consistently outperforming strong baselines such as GPT-4o. 
+Furthermore, the learned behavior generalizes effectively to unseen domains, improves response quality across multiple evaluation dimensions, and preserves general knowledge capability without catastrophic forgetting~\cite{EWC}.
+
+These findings demonstrate that hallucination mitigation can be effectively achieved by modeling it as a behavior learning problem under uncertainty, rather than solely improving knowledge access or generation mechanisms.
