@@ -19,7 +19,9 @@ We measure hallucination using a binary judgment indicating whether a response i
 We report hallucination rate (\%) across different difficulty levels.
 
 \paragraph{Response Quality Metrics}
-We adopt an LLM-as-a-judge framework with eight evaluation dimensions, including relevance, coherence, consistency, fluency, completeness, actionability, evidence use, and conciseness, each normalized to $[0,1]$. 
+We adopt an LLM-as-a-judge framework with eight evaluation dimensions, including relevance, coherence, consistency, fluency, completeness, actionability, evidence use, and conciseness. 
+Most dimensions are rated on a 1--5 scale, while fluency is evaluated on a 1--3 scale. 
+To ensure comparability, scores are aggregated by averaging across dimensions. 
 Detailed definitions of these metrics are provided in Appendix~\ref{app:metrics}.
 
 \subsubsection{Dataset}
