@@ -34,6 +34,8 @@ The dataset is derived from internal sources and is not publicly available due t
 
 \begin{table}[h]
 \centering
+\caption{Hallucination rate (\%) across context sizes (lower is better).}
+\label{tab:hallucination}
 \begin{tabular}{cccc}
 \toprule
 K & GPT-4o & Base & Ours \\
@@ -44,21 +46,25 @@ K & GPT-4o & Base & Ours \\
 7 & 23.0\% & 25.6\% & \textbf{8.6\%} \\
 9 & 19.6\% & 26.0\% & \textbf{10.3\%} \\
 \midrule
-Avg & 18.04\% & 24.24\% & \textbf{8.36\%} \\
+\textbf{Avg} & 18.04\% & 24.24\% & \textbf{8.36\%} \\
 \bottomrule
 \end{tabular}
-\caption{Hallucination rate (\%) across context sizes. Lower is better.}
 \end{table}
 
-Our method significantly reduces hallucination compared to both the base model and GPT-4o. 
-It achieves an average hallucination rate of 8.36\%, corresponding to a 65.5\% relative reduction compared to the base model and a 53.6\% reduction compared to GPT-4o. 
-The improvement is consistent across all context sizes, indicating robustness under increasing contextual complexity.
+As shown in Table~\ref{tab:hallucination}, our method substantially reduces hallucination compared to both the base model and GPT-4o.
 
+On average, the hallucination rate decreases to 8.36\%, corresponding to a 65.5\% relative reduction compared to the base model and a 53.6\% reduction compared to GPT-4o.
+
+The improvement is consistent across all context sizes, indicating robustness as contextual complexity increases.
+
+These results suggest that explicitly modeling uncertainty and behavior enables the model to make more reliable decisions, thereby reducing hallucination in a stable and generalizable manner.
 
 \subsubsection{Generalization Performance}
 
 \begin{table}[h]
 \centering
+\caption{Hallucination rate (\%) on unseen domain dataset (lower is better).}
+\label{tab:generalization}
 \begin{tabular}{cccc}
 \toprule
 K & GPT-4o & Base & Ours \\
@@ -69,20 +75,28 @@ K & GPT-4o & Base & Ours \\
 7 & 9.3\% & 18.3\% & \textbf{7.6\%} \\
 9 & 8.0\% & 17.3\% & 8.6\% \\
 \midrule
-Avg & 6.32\% & 15.06\% & \textbf{5.82\%} \\
+\textbf{Avg} & 6.32\% & 15.06\% & \textbf{5.82\%} \\
 \bottomrule
 \end{tabular}
-\caption{Hallucination rate (\%) on unseen domain dataset.}
 \end{table}
 
-The fine-tuned model maintains strong performance under domain shift, achieving 5.82\% average hallucination rate and outperforming both the base model and GPT-4o.
+We evaluate generalization performance under domain shift by measuring hallucination rates on unseen data.
 
+As shown in Table~\ref{tab:generalization}, the proposed method consistently reduces hallucination compared to the base model across different values of $K$.
+
+On average, our method achieves a hallucination rate of 5.82\%, outperforming both the base model (15.06\%) and GPT-4o (6.32\%).
+
+Notably, performance remains competitive with GPT-4o across most settings, indicating that the learned behavior generalizes effectively beyond the training domain.
+
+These results suggest that the proposed framework improves robustness under distribution shift while maintaining strong generalization capability.
 
 \subsubsection{Response Quality}
 
 \begin{table}[h]
 \centering
-\begin{tabular}{ccc}
+\caption{Response quality evaluation (higher is better).}
+\label{tab:response_quality}
+\begin{tabular}{lcc}
 \toprule
 Metric & Base & Ours \\
 \midrule
@@ -95,20 +109,72 @@ Actionability & 2.70 & \textbf{3.32} \\
 Evidence Use & 2.09 & \textbf{4.79} \\
 Conciseness & 3.97 & \textbf{4.37} \\
 \midrule
-Average & 3.42 & \textbf{4.15} \\
+\textbf{Average} & 3.42 & \textbf{4.15} \\
 \bottomrule
 \end{tabular}
-\caption{Response quality evaluation. Higher is better.}
 \end{table}
 
-Our method improves response quality across all dimensions, with the largest gain in evidence use (2.09 → 4.79), indicating improved grounding and reasoning transparency.
+Response quality is evaluated across multiple dimensions following LLM-based evaluation approaches such as G-Eval~\cite{geval}.
 
+As shown in Table~\ref{tab:response_quality}, our method consistently improves response quality across all dimensions.
+
+The largest gain is observed in evidence use (2.09 → 4.79), indicating significantly improved grounding and transparency in generated responses.
+
+Substantial improvements are also observed in completeness and actionability, suggesting that the model produces more informative and practically useful outputs.
+
+Overall, the average score increases from 3.42 to 4.15, demonstrating that the proposed framework enhances response quality in a comprehensive manner.
 
 \subsubsection{General Knowledge Preservation}
 
-The results show that the proposed method preserves general knowledge capability, with minimal degradation outside mathematical reasoning tasks. 
-Instruction-following ability slightly improves, suggesting enhanced controllability.
+To ensure that hallucination reduction is not achieved at the expense of general capabilities,
+we evaluate the model on a diverse set of benchmark datasets covering:
 
+\begin{itemize}
+    \item English knowledge (MMLU, MMLU-Pro)
+    \item Chinese knowledge (CMMLU, CEVAL)
+    \item Instruction following (IFEval)
+    \item Mathematical reasoning (GSM8K, Math-500)
+\end{itemize}
+
+\begin{table}[h]
+\centering
+\caption{General knowledge evaluation (accuracy, higher is better).}
+\label{tab:general_knowledge}
+\begin{tabular}{l l c c}
+\toprule
+Domain & Dataset & Base & Ours \\
+\midrule
+English & MMLU     & 0.7714 & 0.7686 \\
+English & MMLU-Pro & 0.6034 & 0.6000 \\
+Instruction & IFEval & 0.8529 & 0.8571 \\
+Chinese & CMMLU    & 0.6344 & 0.6200 \\
+Chinese & CEVAL    & 0.6636 & 0.6759 \\
+Math & GSM8K       & 0.9574 & 0.8842 \\
+Math & Math-500    & 0.9000 & 0.8000 \\
+\midrule
+\textbf{Average} &  & 0.7690 & 0.7436 \\
+\textbf{Average (w/o Math)} &  & 0.7051 & 0.7043 \\
+\bottomrule
+\end{tabular}
+\\
+\footnotesize{
+Results are computed on a sampled subset of 3,000 instances (out of 41,512), with weighted accuracy based on dataset proportions.
+}
+\end{table}
+
+The results in Table~\ref{tab:general_knowledge} show that the proposed method largely preserves general knowledge capability.
+
+When excluding mathematical reasoning tasks, the average accuracy remains nearly unchanged (0.7051 → 0.7043), 
+indicating minimal degradation in general knowledge performance.
+
+Instruction-following ability slightly improves (IFEval: 0.8529 → 0.8571), 
+suggesting that behavior-oriented training enhances controllability.
+
+While performance decreases on mathematical reasoning tasks, 
+this may be attributed to the absence of explicit optimization for multi-step reasoning in the proposed reward design.
+
+Overall, these results demonstrate that hallucination mitigation is achieved without catastrophic forgetting \cite{EWC}, 
+and the model retains its general-purpose capabilities.
 
 \subsubsection{Summary}
 
@@ -127,6 +193,8 @@ We analyze token-level entropy:
 
 \begin{table}[h]
 \centering
+\caption{Average entropy under different answerability conditions. Higher values indicate greater uncertainty.}
+\label{tab:entropy}
 \begin{tabular}{ccc}
 \toprule
 K & all\_wrong & one\_correct \\
@@ -138,16 +206,22 @@ K & all\_wrong & one\_correct \\
 9 & -0.8994 & -1.7480 \\
 \bottomrule
 \end{tabular}
-\caption{Entropy under different information conditions.}
 \end{table}
 
-We observe clear separation: higher entropy for unanswerable cases and lower entropy for answerable ones, indicating entropy is an effective proxy for decision boundaries.
+We analyze model uncertainty by measuring entropy under different answerability conditions.
 
+As shown in Table~\ref{tab:entropy}, entropy is consistently higher for unanswerable cases (\textit{all\_wrong}) and lower for answerable cases (\textit{one\_correct}).
+
+This clear separation suggests that entropy serves as an effective signal for distinguishing between answerable and unanswerable scenarios.
+
+These results support the use of entropy as a proxy for decision boundaries, enabling the model to determine when to answer and when to abstain.
 
 \subsubsection{Abstention Behavior}
 
 \begin{table}[h]
 \centering
+\caption{Average entropy under different abstention outcomes. Higher values indicate greater uncertainty.}
+\label{tab:abstention}
 \begin{tabular}{ccc}
 \toprule
 K & Abstained & Not Abstained \\
@@ -159,7 +233,12 @@ K & Abstained & Not Abstained \\
 9 & -0.7664 & -1.5338 \\
 \bottomrule
 \end{tabular}
-\caption{Entropy vs. abstention behavior.}
 \end{table}
 
-Correct abstentions exhibit higher entropy, while incorrect answers show lower entropy (overconfidence), supporting the effectiveness of our entropy-based penalty.
+We analyze the relationship between entropy and abstention behavior.
+
+As shown in Table~\ref{tab:abstention}, entropy is consistently higher for abstained cases and lower for non-abstained cases.
+
+This suggests that correct abstention is associated with higher uncertainty, while incorrect answers tend to exhibit lower entropy, indicating overconfident predictions.
+
+These findings support the effectiveness of the proposed entropy-based penalty in encouraging appropriate abstention behavior.
