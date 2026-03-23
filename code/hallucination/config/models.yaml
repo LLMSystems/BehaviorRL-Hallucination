@@ -1,0 +1,74 @@
+params:
+    default:
+        temperature: 0.2
+        max_tokens: 1000
+        top_p: 1
+        frequency_penalty: 1.4
+        presence_penalty: 0
+
+LLM_engines:
+    Qwen3-0.6B:
+        model: "Qwen3-0.6B"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8801/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Mistral-Small-3.2-24B-Instruct-2506:
+        model: "/models/max/llm/Mistral-Small-3.2-24B-Instruct-2506"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Mistral-Small-3.2-24B-Instruct-2506-INT4:
+        model: "Mistral-Small-3.2-24B-Instruct-2506-INT4"
+        local_api_key: "Empty"
+        local_base_url: "http://10.204.245.170:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Mistral-Small-3.2-24B-Instruct-2506-FP8:
+        model: "/models/max/llm/Mistral-Small-3.2-24B-Instruct-2506-FP8"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Gemma-3-12B-IT:
+        model: "/models/max/llm/gemma-3-12b-it"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Gemma-3-12B-IT-Checkpoint-100-DPO:
+        model: "gemma-3-12b-it-checkpoint-100-dpo"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Gemma-3-12B-IT-Checkpoint-200-DPO:
+        model: "gemma-3-12b-it-checkpoint-200-dpo"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Gemma-3-12B-IT-Checkpoint-300-DPO:
+        model: "gemma-3-12b-it-checkpoint-300-dpo"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+    Gemma-3-12B-IT-Checkpoint-400-DPO:
+        model: "gemma-3-12b-it-checkpoint-400-dpo"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8963/v1"
+        translate_to_cht: True # optional, whether to translate the input to Chinese Traditional
+
+embedding_models:
+    m3e-base:
+        model: "m3e-base"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8887/v1"
+    bge-m3:
+        model: "bge-m3"
+        local_api_key: "Empty"
+        local_base_url: "your_local_base_url"
+
+reranking_models:
+    bge-reranker-large:
+        model: "bge-reranker-large"
+        local_api_key: "Empty"
+        local_base_url: "your_local_base_url"
+    bge-reranker-base:
+        model: "bge-reranker-base"
+        local_api_key: "Empty"
+        local_base_url: "http://localhost:8887/v1"
